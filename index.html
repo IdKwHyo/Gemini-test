@@ -3,605 +3,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journey to Seoul</title>
+    <title>Explore Seoul - Cinematic Journey</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            light: '#C17767', 
-                            dark: '#D4A373'  
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.5s ease, color 0.5s ease;
+            background-color: #0b0f19;
+            color: #9ca3af;
         }
         .font-serif {
             font-family: 'Playfair Display', serif;
         }
         
-        .glass-nav {
-            backdrop-filter: blur(12px);
-            background-color: rgba(252, 250, 248, 0.85);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+        .glass-pill {
+            background: rgba(11, 15, 25, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(236, 72, 153, 0.5);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
         }
-        .dark .glass-nav {
-            background-color: rgba(26, 26, 26, 0.85);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+
+        .cta-btn {
+            border: 1px solid rgba(236, 72, 153, 0.8);
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+            transition: all 0.3s ease;
         }
-        
-        .card-hover {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        .cta-btn:hover {
+            box-shadow: 0 0 35px rgba(236, 72, 153, 0.8);
+            background: rgba(236, 72, 153, 0.1);
+            transform: translateY(-2px);
         }
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);
+
+        .day-content {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
         }
-        .dark .card-hover:hover {
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+        .day-content.active {
+            display: block;
         }
-        
-        .timeline-line::before {
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Timeline connecting line */
+        .timeline-container::before {
             content: '';
             position: absolute;
-            top: 0; bottom: 0; left: 24px;
-            width: 1px;
-            background: rgba(193, 119, 103, 0.3);
-        }
-        .dark .timeline-line::before {
-            background: rgba(212, 163, 115, 0.3);
-        }
-        
-        .timeline-dot {
-            position: absolute;
-            left: 21.5px;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #C17767;
-            z-index: 10;
-            transition: all 0.4s ease;
-        }
-        .dark .timeline-dot {
-            background: #D4A373;
-        }
-        .timeline-item:hover .timeline-dot {
-            transform: scale(2);
+            top: 2rem;
+            bottom: 2rem;
+            left: 1.2rem;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(236, 72, 153, 0.5), rgba(15, 23, 42, 0.1));
+            z-index: 0;
         }
 
-        .toast-enter {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-        .toast-exit {
-            transform: translateY(20px) scale(0.95);
-            opacity: 0;
-        }
-
-        /* Print optimization */
+        /* Print styling */
         @media print {
-            body, .dark { background: white !important; color: black !important; }
-            nav, #hero, .toast, button { display: none !important; }
+            body { background: white !important; color: black !important; }
+            nav, #hero, button { display: none !important; }
             #itinerary { padding-top: 0 !important; }
-            .card-hover { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; }
-            .timeline-line::before, .timeline-dot { display: none; }
-            .timeline-line { padding-left: 0 !important; }
-            img { max-height: 250px; object-fit: cover; }
+            .timeline-container { display: none !important; }
+            .day-content { display: block !important; opacity: 1 !important; page-break-inside: avoid; margin-bottom: 30px; }
+            .day-content img { max-height: 200px; }
             a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
         }
     </style>
 </head>
-<body class="bg-[#fcfaf8] text-slate-800 dark:bg-[#1a1a1a] dark:text-slate-300 antialiased overflow-x-hidden selection:bg-brand-light selection:text-white dark:selection:bg-brand-dark dark:selection:text-slate-900">
+<body class="antialiased overflow-x-hidden selection:bg-pink-500 selection:text-white">
 
-    <!-- Toast Notification -->
-    <div id="copy-toast" class="fixed bottom-6 right-6 bg-slate-900/95 dark:bg-slate-100/95 backdrop-blur-md text-white dark:text-slate-900 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 transition-all duration-300 toast-exit pointer-events-none border border-slate-700 dark:border-slate-300">
-        <div class="bg-green-500/20 p-1 rounded-full">
-            <svg class="w-5 h-5 text-green-400 dark:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-        </div>
-        <div>
-            <p class="font-semibold text-sm">Copied to clipboard!</p>
-            <p id="toast-address" class="text-xs text-slate-400 dark:text-slate-500 font-mono truncate max-w-[200px]"></p>
-        </div>
+    <!-- Floating Navbar -->
+    <div class="fixed w-full top-6 z-50 flex justify-center px-4 pointer-events-none">
+        <nav class="glass-pill rounded-full px-8 py-3 flex items-center justify-between gap-12 pointer-events-auto">
+            <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
+                <span class="font-serif font-semibold text-xl tracking-wide text-white">Seoul <span class="text-pink-500 italic">Cinematic</span></span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#hero" class="text-gray-400 hover:text-pink-400 text-xs font-semibold tracking-widest uppercase transition-colors">Home</a>
+                <a href="#essentials" class="text-gray-400 hover:text-pink-400 text-xs font-semibold tracking-widest uppercase transition-colors">Tips</a>
+                <a href="#itinerary" class="text-gray-400 hover:text-pink-400 text-xs font-semibold tracking-widest uppercase transition-colors">Itinerary</a>
+            </div>
+        </nav>
     </div>
 
-    <!-- Navigation -->
-    <nav class="fixed w-full z-40 glass-nav transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-                    <span class="font-serif font-semibold text-2xl tracking-wide dark:text-white">Seoul <span class="text-brand-light dark:text-brand-dark italic">&</span> Beyond</span>
-                </div>
-                <div class="flex items-center gap-6">
-                    <div class="hidden md:flex items-center space-x-8 mr-4">
-                        <a href="#essentials" class="text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark px-3 py-2 text-sm font-medium tracking-widest uppercase transition-colors">Tips</a>
-                        <a href="#itinerary" class="text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark px-3 py-2 text-sm font-medium tracking-widest uppercase transition-colors">Itinerary</a>
-                    </div>
-                    
-                    <!-- Print Button -->
-                    <button onclick="window.print()" class="hidden md:block p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors focus:outline-none" aria-label="Print Itinerary" title="Print Itinerary">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    </button>
-
-                    <!-- Dark Mode Toggle -->
-                    <button id="theme-toggle" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors focus:outline-none" aria-label="Toggle Dark Mode">
-                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
     <!-- Hero Section -->
-    <section id="hero" class="relative h-[80vh] flex items-center justify-center">
+    <section id="hero" class="relative h-screen flex items-center justify-center">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=2070&auto=format&fit=crop" alt="Seoul Skyline" class="w-full h-full object-cover object-center" />
-            <div class="absolute inset-0 bg-slate-900/40 dark:bg-slate-900/70 transition-colors duration-500"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#fcfaf8] dark:to-[#1a1a1a] transition-colors duration-500"></div>
+            <div class="absolute inset-0 bg-[#0b0f19]/70"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-transparent to-[#0b0f19]/30"></div>
         </div>
         
-        <div class="relative z-10 text-center px-4 max-w-3xl mx-auto mt-20">
-            <h1 class="text-5xl md:text-7xl font-serif text-white mb-6 tracking-tight leading-tight drop-shadow-lg">
-                The Soul of Seoul
+        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto mt-20">
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-serif text-white mb-6 tracking-tight leading-tight drop-shadow-2xl">
+                EXPLORE SEOUL:<br/>A CINEMATIC 7-DAY JOURNEY
             </h1>
-            <p class="text-lg md:text-xl text-slate-100 font-light mb-12 tracking-widest uppercase opacity-90">
-                A Seven-Day Reflection
+            <p class="text-xs md:text-sm text-gray-300 font-bold mb-12 tracking-[0.3em] uppercase opacity-90 drop-shadow-lg">
+                From Ancient Palaces to Neon Nights
             </p>
-            <a href="#itinerary" class="inline-block border border-white/30 bg-white/10 backdrop-blur-sm text-white font-medium py-3 px-8 rounded-full hover:bg-white hover:text-slate-900 transition-all duration-300">
-                Start Exploring
+            <a href="#itinerary" class="cta-btn inline-block rounded-full bg-transparent text-pink-400 font-bold uppercase tracking-widest text-xs py-4 px-10">
+                Start Your Adventure
             </a>
         </div>
     </section>
 
-    <!-- Essentials Section (NEW) -->
-    <section id="essentials" class="py-12 bg-white dark:bg-[#1f1f1f] border-y border-slate-100 dark:border-slate-800/50">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center gap-4 mb-8">
-                <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
-                <h2 class="text-sm tracking-widest uppercase font-semibold text-brand-light dark:text-brand-dark">Essential Travel Tips</h2>
-                <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
-            </div>
+    <!-- Essentials Section -->
+    <section id="essentials" class="py-16 bg-[#0b0f19] relative z-10 border-t border-slate-800/50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-sm tracking-widest uppercase font-semibold text-pink-500 text-center mb-12">Essential Travel Tips</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Navigation -->
-                <div class="p-5 rounded-xl bg-[#fcfaf8] dark:bg-[#242424] border border-slate-100 dark:border-slate-800 transition-colors">
-                    <div class="w-8 h-8 rounded bg-brand-light/10 dark:bg-brand-dark/10 flex items-center justify-center mb-3 text-brand-light dark:text-brand-dark">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
+                    <div class="text-pink-500 mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                     </div>
-                    <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-1 text-sm">Navigation Apps</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Download <strong>Naver Map</strong> or KakaoMap. Google Maps lacks walking directions in Korea.</p>
+                    <h3 class="font-serif text-white text-lg mb-2">Navigation</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">Download <strong class="text-white">Naver Map</strong> or KakaoMap. Google Maps lacks walking directions in Korea.</p>
                 </div>
                 <!-- Transit -->
-                <div class="p-5 rounded-xl bg-[#fcfaf8] dark:bg-[#242424] border border-slate-100 dark:border-slate-800 transition-colors">
-                    <div class="w-8 h-8 rounded bg-brand-light/10 dark:bg-brand-dark/10 flex items-center justify-center mb-3 text-brand-light dark:text-brand-dark">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
+                    <div class="text-pink-500 mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                     </div>
-                    <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-1 text-sm">T-Money Card</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Buy a transit card at any convenience store (cash only). Use it for subways, buses, and taxis.</p>
+                    <h3 class="font-serif text-white text-lg mb-2">T-Money Card</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">Buy a transit card at any convenience store (cash only). Use it for subways, buses, and taxis.</p>
                 </div>
                 <!-- Currency -->
-                <div class="p-5 rounded-xl bg-[#fcfaf8] dark:bg-[#242424] border border-slate-100 dark:border-slate-800 transition-colors">
-                    <div class="w-8 h-8 rounded bg-brand-light/10 dark:bg-brand-dark/10 flex items-center justify-center mb-3 text-brand-light dark:text-brand-dark">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
+                    <div class="text-pink-500 mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-1 text-sm">Currency (KRW)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Cards are universally accepted, but keep ₩20,000-₩50,000 in cash for street food and T-Money reloads.</p>
+                    <h3 class="font-serif text-white text-lg mb-2">Currency (KRW)</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">Cards are universally accepted, but keep ₩20k-₩50k in cash for street food and T-Money reloads.</p>
                 </div>
                 <!-- Power -->
-                <div class="p-5 rounded-xl bg-[#fcfaf8] dark:bg-[#242424] border border-slate-100 dark:border-slate-800 transition-colors">
-                    <div class="w-8 h-8 rounded bg-brand-light/10 dark:bg-brand-dark/10 flex items-center justify-center mb-3 text-brand-light dark:text-brand-dark">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
+                    <div class="text-pink-500 mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
-                    <h3 class="font-semibold text-slate-800 dark:text-slate-200 mb-1 text-sm">Power & Connectivity</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Type C/F plugs (220V). E-SIMs (like Airalo or Nomad) are highly recommended for seamless data.</p>
+                    <h3 class="font-serif text-white text-lg mb-2">Connectivity</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">Type C/F plugs (220V). E-SIMs (like Airalo or Nomad) are highly recommended for seamless data.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Itinerary Section -->
-    <section id="itinerary" class="py-20 relative pb-40">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div class="text-center mb-20">
-                <h2 class="text-3xl font-serif text-slate-900 dark:text-white mb-4">Our Itinerary</h2>
-                <div class="w-12 h-px bg-brand-light dark:bg-brand-dark mx-auto"></div>
-            </div>
-
-            <!-- Vertical Timeline -->
-            <div class="relative timeline-line pl-8 md:pl-16 py-4">
+    <!-- Itinerary Layout (Split Timeline) -->
+    <section id="itinerary" class="py-24 bg-[#0b0f19] relative border-t border-slate-800/50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-16 items-start relative">
                 
-                <!-- Day 1 -->
-                <div class="timeline-item relative mb-24 group">
-                    <div class="timeline-dot top-8"></div>
-                    <div class="card-hover bg-white dark:bg-[#242424] p-8 md:p-10 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="mb-10">
-                            <h3 class="text-xl font-serif font-medium text-slate-900 dark:text-white mb-1">Day I &middot; Heritage</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">Palaces & Traditional Streets</p>
-                        </div>
+                <!-- Left Nav (Timeline Column - 30%) -->
+                <div class="lg:w-[35%] relative timeline-container z-10 w-full lg:sticky lg:top-32">
+                    <div class="flex flex-col space-y-12">
                         
-                        <div class="flex flex-col md:flex-row gap-10 items-stretch">
-                            <div class="flex-1 space-y-8">
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Morning</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Gyeongbokgung Palace</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Embrace the quiet grandeur of the past. Rent a Hanbok and wander through the sweeping courtyards of the main royal palace.</p>
-                                    
-                                    <!-- Useful Map Links -->
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">161 Sajik-ro, Jongno-gu</span>
-                                        </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('161 Sajik-ro, Jongno-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=161+Sajik-ro,+Jongno-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/161%20Sajik-ro,%20Jongno-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Afternoon & Evening</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Bukchon & Ikseon-dong</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Lose yourself in the winding, tea-house-filled alleyways of Hanok villages. End the day with sizzling authentic Korean BBQ.</p>
-                                    
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Ikseon-dong, Jongno-gu</span>
-                                        </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('Ikseon-dong, Jongno-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=Ikseon-dong,+Jongno-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/Ikseon-dong,%20Jongno-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Nav Item 1 -->
+                        <div class="flex items-center gap-6 cursor-pointer group nav-item active" data-target="day-1">
+                            <div class="w-10 h-10 rounded-full border border-slate-700 bg-[#0b0f19] flex items-center justify-center text-slate-500 group-[.active]:border-pink-500/50 group-[.active]:text-pink-400 group-[.active]:shadow-[0_0_15px_rgba(236,72,153,0.6)] group-[.active]:bg-pink-500/10 transition-all z-10">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                             </div>
-                            
-                            <div class="md:w-5/12 shrink-0 min-h-[250px]">
-                                <div class="relative rounded-xl overflow-hidden h-full">
-                                    <img src="https://images.unsplash.com/photo-1546874177-9e664107314e?q=80&w=800&auto=format&fit=crop" alt="Traditional Palace" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/30"></div>
-                                </div>
+                            <div>
+                                <div class="text-slate-600 group-[.active]:text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1 transition-colors">Day 1</div>
+                                <div class="text-slate-500 group-[.active]:text-white font-serif text-xl transition-colors">Heritage</div>
                             </div>
                         </div>
+
+                        <!-- Nav Item 2 -->
+                        <div class="flex items-center gap-6 cursor-pointer group nav-item" data-target="day-2">
+                            <div class="w-10 h-10 rounded-full border border-slate-700 bg-[#0b0f19] flex items-center justify-center text-slate-500 group-[.active]:border-pink-500/50 group-[.active]:text-pink-400 group-[.active]:shadow-[0_0_15px_rgba(236,72,153,0.6)] group-[.active]:bg-pink-500/10 transition-all z-10">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                            </div>
+                            <div>
+                                <div class="text-slate-600 group-[.active]:text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1 transition-colors">Day 2</div>
+                                <div class="text-slate-500 group-[.active]:text-white font-serif text-xl transition-colors">Pulse</div>
+                            </div>
+                        </div>
+
+                        <!-- Nav Item 3 -->
+                        <div class="flex items-center gap-6 cursor-pointer group nav-item" data-target="day-3">
+                            <div class="w-10 h-10 rounded-full border border-slate-700 bg-[#0b0f19] flex items-center justify-center text-slate-500 group-[.active]:border-pink-500/50 group-[.active]:text-pink-400 group-[.active]:shadow-[0_0_15px_rgba(236,72,153,0.6)] group-[.active]:bg-pink-500/10 transition-all z-10">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"></path></svg>
+                            </div>
+                            <div>
+                                <div class="text-slate-600 group-[.active]:text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1 transition-colors">Day 3</div>
+                                <div class="text-slate-500 group-[.active]:text-white font-serif text-xl transition-colors">Perspectives</div>
+                            </div>
+                        </div>
+
+                        <!-- Nav Item 4 -->
+                        <div class="flex items-center gap-6 cursor-pointer group nav-item" data-target="day-4">
+                            <div class="w-10 h-10 rounded-full border border-slate-700 bg-[#0b0f19] flex items-center justify-center text-slate-500 group-[.active]:border-pink-500/50 group-[.active]:text-pink-400 group-[.active]:shadow-[0_0_15px_rgba(236,72,153,0.6)] group-[.active]:bg-pink-500/10 transition-all z-10">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"></path></svg>
+                            </div>
+                            <div>
+                                <div class="text-slate-600 group-[.active]:text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1 transition-colors">Day 4</div>
+                                <div class="text-slate-500 group-[.active]:text-white font-serif text-xl transition-colors">Trends</div>
+                            </div>
+                        </div>
+
+                        <!-- Nav Item 5 -->
+                        <div class="flex items-center gap-6 cursor-pointer group nav-item" data-target="day-5">
+                            <div class="w-10 h-10 rounded-full border border-slate-700 bg-[#0b0f19] flex items-center justify-center text-slate-500 group-[.active]:border-pink-500/50 group-[.active]:text-pink-400 group-[.active]:shadow-[0_0_15px_rgba(236,72,153,0.6)] group-[.active]:bg-pink-500/10 transition-all z-10">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                            </div>
+                            <div>
+                                <div class="text-slate-600 group-[.active]:text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1 transition-colors">Day 5-7</div>
+                                <div class="text-slate-500 group-[.active]:text-white font-serif text-xl transition-colors">Culmination</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-
-                <!-- Day 2 -->
-                <div class="timeline-item relative mb-24 group">
-                    <div class="timeline-dot top-8"></div>
-                    <div class="card-hover bg-white dark:bg-[#242424] p-8 md:p-10 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="mb-10">
-                            <h3 class="text-xl font-serif font-medium text-slate-900 dark:text-white mb-1">Day II &middot; Pulse</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">K-Culture & Urban Rhythm</p>
-                        </div>
+                
+                <!-- Right Content Area (Content Column - 65%) -->
+                <div class="lg:w-[65%] w-full">
+                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 md:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
                         
-                        <div class="flex flex-col md:flex-row-reverse gap-10 items-stretch">
-                            <div class="flex-1 space-y-8">
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Morning</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Starfield Library</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Find a moment of awe among the towering floor-to-ceiling bookshelves in the bustling heart of Gangnam.</p>
-                                    
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">513 Yeongdong-daero</span>
-                                        </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('513 Yeongdong-daero, Gangnam-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=513+Yeongdong-daero,+Gangnam-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/513%20Yeongdong-daero,%20Gangnam-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Afternoon & Evening</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Hongdae Culture</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Experience the raw energy of modern youth culture. From boutique shopping to vibrant street food and live busking performances.</p>
-                                    
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Hongik-ro, Mapo-gu</span>
-                                        </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('Hongik-ro, Mapo-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=Hongik-ro,+Mapo-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/Hongik-ro,%20Mapo-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Day 1 Content -->
+                        <div id="day-1" class="day-content active">
+                            <h3 class="text-3xl font-serif text-white mb-8">Palaces & Traditional Streets</h3>
+                            
+                            <!-- Dual Images -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <img src="https://images.unsplash.com/photo-1546874177-9e664107314e?q=80&w=800&auto=format&fit=crop" alt="Gyeongbokgung" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80">
+                                <img src="https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=800&auto=format&fit=crop" alt="Hanok Village" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80 hidden sm:block">
                             </div>
                             
-                            <div class="md:w-5/12 shrink-0 min-h-[250px]">
-                                <div class="relative rounded-xl overflow-hidden h-full">
-                                    <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=800&auto=format&fit=crop" alt="Seoul Neon Streets" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/30"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Day 3 -->
-                <div class="timeline-item relative mb-24 group">
-                    <div class="timeline-dot top-8"></div>
-                    <div class="card-hover bg-white dark:bg-[#242424] p-8 md:p-10 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="mb-10">
-                            <h3 class="text-xl font-serif font-medium text-slate-900 dark:text-white mb-1">Day III &middot; Perspectives</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">City Views & Market Life</p>
-                        </div>
-                        
-                        <div class="flex flex-col md:flex-row gap-10 items-stretch">
-                            <div class="flex-1 space-y-8">
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Morning</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">N Seoul Tower</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Rise above the city. Ride the scenic Namsan Cable Car and take in the panoramic skyline from the observation deck.</p>
-                                    
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">105 Namsangongwon-gil</span>
-                                        </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('105 Namsangongwon-gil, Yongsan-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=105+Namsangongwon-gil,+Yongsan-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/105%20Namsangongwon-gil,%20Yongsan-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Afternoon & Evening</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Namdaemun & Cheonggyecheon</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Feast on Kalguksu in the bustling market alleys, then find peace with a serene evening stroll along the restored city stream.</p>
-                                    
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Cheonggyecheon-ro</span>
-                                        </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('Cheonggyecheon-ro, Jongno-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=Cheonggyecheon-ro,+Jongno-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/Cheonggyecheon-ro,%20Jongno-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Description -->
+                            <div class="mb-8">
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Description</h4>
+                                <p class="text-gray-400 leading-relaxed text-sm">
+                                    Embrace the quiet grandeur of the past. Start your morning by renting a traditional Hanbok and wandering through the sweeping courtyards of Gyeongbokgung Palace. In the afternoon, lose yourself in the winding, tea-house-filled alleyways of Bukchon Hanok Village. End your day exploring hidden retro cafes in Ikseon-dong, capped with a sizzling authentic Korean BBQ dinner.
+                                </p>
                             </div>
                             
-                            <div class="md:w-5/12 shrink-0 min-h-[250px]">
-                                <div class="relative rounded-xl overflow-hidden h-full">
-                                    <img src="https://images.unsplash.com/photo-1538485399081-7191377e8241?q=80&w=800&auto=format&fit=crop" alt="N Seoul Tower" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/30"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Day 4 -->
-                <div class="timeline-item relative mb-24 group">
-                    <div class="timeline-dot top-8"></div>
-                    <div class="card-hover bg-white dark:bg-[#242424] p-8 md:p-10 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="mb-10">
-                            <h3 class="text-xl font-serif font-medium text-slate-900 dark:text-white mb-1">Day IV &middot; Trends</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">Industrial Chic & Speakeasies</p>
-                        </div>
-                        
-                        <div class="flex flex-col md:flex-row-reverse gap-10 items-stretch">
-                            <div class="flex-1 space-y-8">
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Daytime</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Seongsu-dong</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Discover experimental boutiques in the "Brooklyn of Seoul". Sip artisan coffee at renowned industrial-chic bakery cafes like Cafe Onion.</p>
-                                    
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">8 Achasan-ro 9-gil</span>
+                            <!-- Travel Tips & Locations -->
+                            <div>
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Travel Tips & Locations</h4>
+                                <div class="space-y-4">
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Gyeongbokgung Palace</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">161 Sajik-ro, Jongno-gu</p>
                                         </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('8 Achasan-ro 9-gil, Seongdong-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=8+Achasan-ro+9-gil,+Seongdong-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/8%20Achasan-ro%209-gil,%20Seongdong-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=161+Sajik-ro,+Jongno-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/161%20Sajik-ro,%20Jongno-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="relative group/step">
-                                    <p class="text-brand-light dark:text-brand-dark tracking-widest uppercase text-[10px] font-semibold mb-2">Evening</p>
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-2">Hipjiro (Euljiro)</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 leading-relaxed">Navigate unassuming back alleys to uncover some of the city's best hidden bars and vintage speakeasies.</p>
                                     
-                                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Eulji-ro, Jung-gu</span>
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Ikseon-dong Hanok Alley</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">Ikseon-dong, Jongno-gu</p>
                                         </div>
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <button onclick="copyToClipboard('Eulji-ro, Jung-gu, Seoul')" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded transition-colors">Copy</button>
-                                            <a href="https://www.google.com/maps/search/?api=1&query=Eulji-ro,+Jung-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark border border-slate-200 dark:border-slate-700 px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                G Maps <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
-                                            <a href="https://map.naver.com/v5/search/Eulji-ro,%20Jung-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold bg-[#03c75a]/10 text-[#03c75a] hover:bg-[#03c75a] hover:text-white dark:bg-[#03c75a]/20 dark:hover:bg-[#03c75a] dark:hover:text-white px-2 py-1.5 rounded transition-colors flex items-center gap-1">
-                                                Naver <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </a>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=Ikseon-dong,+Jongno-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/Ikseon-dong,%20Jongno-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="md:w-5/12 shrink-0 min-h-[250px]">
-                                <div class="relative rounded-xl overflow-hidden h-full">
-                                    <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop" alt="Cafe Culture" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/30"></div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Days 5-7 Condensed -->
-                <div class="timeline-item relative group">
-                    <div class="timeline-dot top-8"></div>
-                    <div class="card-hover bg-white dark:bg-[#242424] p-8 md:p-10 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="mb-10">
-                            <h3 class="text-xl font-serif font-medium text-slate-900 dark:text-white mb-1">Days V-VII &middot; Culmination</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm">Skyline, History & Farewell</p>
-                        </div>
-                        <div class="flex flex-col md:flex-row gap-10 items-stretch">
-                            <div class="flex-1 space-y-6">
-                                <div class="relative group/step">
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-1">Lotte World & Han River</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed border-l-2 border-brand-light/30 dark:border-brand-dark/30 pl-3">View the city from the highest glass floor, followed by convenience store Ramyeon by the Han River as the sun sets.</p>
-                                </div>
-                                <div class="relative group/step">
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-1">DMZ & Jimjilbang</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed border-l-2 border-brand-light/30 dark:border-brand-dark/30 pl-3">Explore the profound history at the border, then unwind completely at a traditional Korean bathhouse.</p>
-                                </div>
-                                <div class="relative group/step">
-                                    <p class="text-slate-800 dark:text-slate-200 font-medium text-lg mb-1">Myeong-dong Farewell</p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed border-l-2 border-brand-light/30 dark:border-brand-dark/30 pl-3">A final shopping haul capped off with classic Korean Fried Chicken and Beer (Chimaek) to celebrate the journey.</p>
-                                </div>
+                        <!-- Day 2 Content -->
+                        <div id="day-2" class="day-content">
+                            <h3 class="text-3xl font-serif text-white mb-8">K-Culture & Urban Rhythm</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80">
+                                <img src="https://images.unsplash.com/photo-1613589985954-5c9118c7bc76?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80 hidden sm:block">
                             </div>
                             
-                            <div class="md:w-5/12 shrink-0 min-h-[250px]">
-                                <div class="relative rounded-xl overflow-hidden h-full">
-                                    <img src="https://images.unsplash.com/photo-1516815231560-8f41ec531527?q=80&w=800&auto=format&fit=crop" alt="Han River at Night" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/30"></div>
+                            <div class="mb-8">
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Description</h4>
+                                <p class="text-gray-400 leading-relaxed text-sm">
+                                    Find a moment of awe among the towering floor-to-ceiling bookshelves at Starfield Library in the bustling heart of Gangnam. In the afternoon, head to Hongdae to experience the raw energy of modern youth culture, boutique shopping, vibrant street food, and thrilling live busking performances in the evening.
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Travel Tips & Locations</h4>
+                                <div class="space-y-4">
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Starfield Library</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">513 Yeongdong-daero, Gangnam-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=513+Yeongdong-daero,+Gangnam-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/513%20Yeongdong-daero,%20Gangnam-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Hongdae Culture Street</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">Hongik-ro, Mapo-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=Hongik-ro,+Mapo-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/Hongik-ro,%20Mapo-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Day 3 Content -->
+                        <div id="day-3" class="day-content">
+                            <h3 class="text-3xl font-serif text-white mb-8">City Views & Market Life</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <img src="https://images.unsplash.com/photo-1538485399081-7191377e8241?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80">
+                                <img src="https://images.unsplash.com/photo-1619934149266-963e6f9b69b2?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80 hidden sm:block">
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Description</h4>
+                                <p class="text-gray-400 leading-relaxed text-sm">
+                                    Rise above the city by riding the scenic Namsan Cable Car to the iconic N Seoul Tower observation deck. Later, feast on Kalguksu (knife-cut noodles) in the bustling alleys of Namdaemun Market, and find peace with a serene evening stroll along the beautifully illuminated Cheonggyecheon Stream.
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Travel Tips & Locations</h4>
+                                <div class="space-y-4">
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">N Seoul Tower</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">105 Namsangongwon-gil, Yongsan-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=105+Namsangongwon-gil,+Yongsan-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/105%20Namsangongwon-gil,%20Yongsan-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Cheonggyecheon Stream</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">Cheonggyecheon-ro, Jongno-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=Cheonggyecheon-ro,+Jongno-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/Cheonggyecheon-ro,%20Jongno-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 4 Content -->
+                        <div id="day-4" class="day-content">
+                            <h3 class="text-3xl font-serif text-white mb-8">Industrial Chic & Speakeasies</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80">
+                                <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80 hidden sm:block">
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Description</h4>
+                                <p class="text-gray-400 leading-relaxed text-sm">
+                                    Discover experimental boutiques and sip artisan coffee in Seongsu-dong, often called the "Brooklyn of Seoul". In the evening, navigate the unassuming, gritty back alleys of Hipjiro (Euljiro) to uncover some of the city's most trendy hidden bars and vintage speakeasies.
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Travel Tips & Locations</h4>
+                                <div class="space-y-4">
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Seongsu-dong Cafes</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">8 Achasan-ro 9-gil, Seongdong-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=8+Achasan-ro+9-gil,+Seongdong-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/8%20Achasan-ro%209-gil,%20Seongdong-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Hipjiro (Euljiro) Alleys</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">Eulji-ro, Jung-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=Eulji-ro,+Jung-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/Eulji-ro,%20Jung-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 5-7 Content -->
+                        <div id="day-5" class="day-content">
+                            <h3 class="text-3xl font-serif text-white mb-8">Skyline, History & Farewell</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <img src="https://images.unsplash.com/photo-1516815231560-8f41ec531527?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80">
+                                <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=800&auto=format&fit=crop" class="rounded-2xl h-64 w-full object-cover shadow-lg border border-slate-800/80 hidden sm:block">
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Description</h4>
+                                <p class="text-gray-400 leading-relaxed text-sm">
+                                    Wrap up your journey with breathtaking views from Lotte World Tower and riverside Ramyeon at Hangang Park. Explore profound history with a day trip to the DMZ, unwind completely at a traditional Jimjilbang bathhouse, and celebrate your final night in Myeong-dong with a shopping haul and classic Korean Fried Chicken and Beer (Chimaek).
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-3">Travel Tips & Locations</h4>
+                                <div class="space-y-4">
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Lotte World Tower</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">300 Olympic-ro, Songpa-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=300+Olympic-ro,+Songpa-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/300%20Olympic-ro,%20Songpa-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-[#0b0f19] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-white font-medium text-sm mb-1">Myeong-dong Shopping</p>
+                                            <p class="text-[11px] text-slate-500 font-mono">Myeongdong-gil, Jung-gu</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="https://www.google.com/maps/search/?api=1&query=Myeongdong-gil,+Jung-gu,+Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-white border border-slate-700 px-3 py-1.5 rounded-full transition-colors">G Maps</a>
+                                            <a href="https://map.naver.com/v5/search/Myeongdong-gil,%20Jung-gu,%20Seoul" target="_blank" class="text-[10px] uppercase tracking-wider font-semibold text-[#03c75a] border border-[#03c75a]/30 hover:bg-[#03c75a]/10 px-3 py-1.5 rounded-full transition-colors">Naver</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-[#151515] text-slate-500 dark:text-slate-400 py-16 border-t border-slate-100 dark:border-slate-800/50">
+    <footer class="bg-[#05070c] py-16 border-t border-slate-800/50 mt-12">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
-            <div class="font-serif text-xl mb-4 text-slate-800 dark:text-slate-200">
-                Seoul <span class="text-brand-light dark:text-brand-dark italic">&</span> Beyond
+            <div class="font-serif text-xl mb-4 text-white">
+                Seoul <span class="text-pink-500 italic">Cinematic</span>
             </div>
-            <p class="text-sm max-w-md mb-8 leading-relaxed">
+            <p class="text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
                 A reflection on our 7-day adventure through the beautiful streets, palaces, and cafes of Seoul, South Korea.
             </p>
-            <button onclick="copyToClipboard(window.location.href)" class="text-xs uppercase tracking-widest font-medium text-slate-500 hover:text-brand-light dark:text-slate-400 dark:hover:text-brand-dark transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-5.368m0 5.368l5.662 2.831m-5.662-2.831l5.662-2.831m-5.662-2.831l5.662-2.831m0 0a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                Share Itinerary
-            </button>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script>
-        // Dark Mode Logic
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        document.addEventListener('DOMContentLoaded', () => {
+            const navItems = document.querySelectorAll('.nav-item');
+            const contents = document.querySelectorAll('.day-content');
 
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            themeToggleLightIcon.classList.remove('hidden');
-            document.documentElement.classList.add('dark');
-        } else {
-            themeToggleDarkIcon.classList.remove('hidden');
-            document.documentElement.classList.remove('dark');
-        }
-
-        themeToggleBtn.addEventListener('click', function() {
-            themeToggleDarkIcon.classList.toggle('hidden');
-            themeToggleLightIcon.classList.toggle('hidden');
-
-            if (localStorage.getItem('color-theme')) {
-                if (localStorage.getItem('color-theme') === 'light') {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                }
-            } else {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                }
-            }
-        });
-
-        // Clipboard Copy Logic
-        let toastTimeout;
-        function copyToClipboard(textToCopy) {
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const toast = document.getElementById('copy-toast');
-                const addressText = document.getElementById('toast-address');
-                
-                if (textToCopy.includes('http')) {
-                    addressText.textContent = "Link copied!";
-                } else {
-                    addressText.textContent = textToCopy;
-                }
-                
-                clearTimeout(toastTimeout);
-                
-                toast.classList.remove('toast-exit', 'pointer-events-none');
-                toast.classList.add('toast-enter');
-                
-                toastTimeout = setTimeout(() => {
-                    toast.classList.remove('toast-enter');
-                    toast.classList.add('toast-exit', 'pointer-events-none');
-                }, 3000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active from all nav items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    // Add active to clicked nav item
+                    item.classList.add('active');
+                    
+                    // Hide all contents
+                    contents.forEach(content => content.classList.remove('active'));
+                    // Show target content
+                    const target = item.getAttribute('data-target');
+                    document.getElementById(target).classList.add('active');
+                });
             });
-        }
+        });
     </script>
 </body>
 </html>
